@@ -4,6 +4,8 @@ import 'package:photo_map_poc/domain/purchase_validator.dart';
 import 'package:photo_map_poc/store/subscription/subscription_actions.dart';
 import 'package:redux_saga/redux_saga.dart';
 
+import '../../main.dart';
+
 subscribeSaga(InAppPurchasesManager manager, PurchaseValidator validator) sync* {
   yield TakeLatest(_subscribe, args: [manager, validator], pattern: SubscribeRequestedAction);
   yield TakeEvery(_updatePurchase, args: [manager, validator], pattern: PurchaseUpdatedAction);
@@ -15,7 +17,7 @@ _subscribe(InAppPurchasesManager manager, PurchaseValidator validator, {required
     yield Call(manager.subscribe, result: result);
     yield Put(SubscribeSucceededAction(result.value!));
   }, Catch: (e, s) {
-    print("Exception caught $e, $s");
+    logger.e("Exception caught:", e, s);
   });
 }
 
@@ -40,6 +42,6 @@ _updatePurchase(InAppPurchasesManager manager, PurchaseValidator validator, {req
       }
     }
   }, Catch: (e, s) {
-    print("Exception caught $e, $s");
+    logger.e("Exception caught:", e, s);
   });
 }

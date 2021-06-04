@@ -21,4 +21,8 @@ class PhotosDao {
     return await database.insert(tablePhotos, entity.toMap());
   }
 
+  Future delete(int id) async {
+    return await database.delete(tablePhotos, where: "$columnId = ?", whereArgs: [id]);
+  }
+
 }

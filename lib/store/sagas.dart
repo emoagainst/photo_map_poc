@@ -14,8 +14,8 @@ import 'package:photo_map_poc/store/subscription/subscription_sagas.dart';
 import 'package:redux_saga/redux_saga.dart';
 
 rootSaga(PhotosDao dao, ImagePicker picker, GeofenceManager geofenceManager, PaymentProvider paymentProvider, InAppPurchasesManager subscriptionsManager, PurchaseValidator validator) sync* {
-  yield Fork(photoDetailsSaga, args: [dao]);
   yield Fork(photosSaga, args: [dao]);
+  yield Fork(photoDetailsSaga, args: [dao]);
   yield Fork(imagePickerSaga, args: [picker]);
   yield Fork(metadataSaga);
   yield Fork(geofenceSaga, args: [geofenceManager]);

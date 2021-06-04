@@ -2,7 +2,7 @@
 import 'package:fluro/fluro.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_map_poc/components/photo_details/photo_details_container.dart';
-import 'package:photo_map_poc/components/photos/photos_container.dart';
+import 'package:photo_map_poc/components/photos/photos_grid_container.dart';
 
 void defineRoutes(FluroRouter router) {
   router.define("/", handler: photosHandler);
@@ -10,7 +10,7 @@ void defineRoutes(FluroRouter router) {
 }
 
 final photosHandler = Handler(handlerFunc: (BuildContext? context, Map<String, List<String>> parameters) {
-  return PhotosContainer();
+  return PhotosGrid();
 });
 
 final photoDetailsHandler = Handler(handlerFunc: (BuildContext? context, Map<String, List<String>> parameters) {

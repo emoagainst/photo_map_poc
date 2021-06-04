@@ -5,13 +5,15 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:photo_map_poc/domain/models/photo_data.dart';
 
+import '../main.dart';
+
 class GeofenceManager {
   final _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   final _initializationSettingsAndroid = new AndroidInitializationSettings('ic_launcher');
   final _initializationSettingsIOS = IOSInitializationSettings(onDidReceiveLocalNotification: null);
 
   void init() {
-    print("GeofenceManager init");
+    logger.d("GeofenceManager init");
     final initializationSettings = InitializationSettings(android: _initializationSettingsAndroid, iOS: _initializationSettingsIOS);
     _flutterLocalNotificationsPlugin.initialize(initializationSettings, onSelectNotification: null);
 
@@ -23,11 +25,11 @@ class GeofenceManager {
 
   void listenToGeofences() {
     Geofence.startListening(GeolocationEvent.entry, (entry) {
-      print("Entry of a georegion. Welcome to: ${entry.id}");
+      logger.d("Entry of a georegion. Welcome to: ${entry.id}");
       _scheduleNotification("Entry of a georegion", "Welcome to: ${entry.id}");
     });
     Geofence.startListening(GeolocationEvent.exit, (entry) {
-      print("Exit of a georegion. Welcome to: ${entry.id}");
+      logger.d("Exit of a georegion. Welcome to: ${entry.id}");
       _scheduleNotification("Exit of a georegion", "Byebye to: ${entry.id}");
     });
   }
@@ -35,13 +37,13 @@ class GeofenceManager {
   void listenToLocationUpdates() {
     Geofence.startListeningForLocationChanges();
     Geofence.backgroundLocationUpdated.stream.listen((coordinate) {
-      print("Location changed to ${coordinate.latitude}: ${coordinate.longitude}");
-      _scheduleNotification("Location changed", "Location changed to ${coordinate.latitude}: ${coordinate.longitude}");
+      logger.d("Location changed to ${coordinate.latitude}: ${coordinate.longitude}");
+      // _scheduleNotification("Location changed", "Location changed to ${coordinate.latitude}: ${coordinate.longitude}");
     });
 }
 
   _scheduleNotification(String title, String subtitle) {
-    print("scheduling one with $title and $subtitle");
+    logger.d("scheduling one with $title and $subtitle");
     var rng = new Random();
     Future.delayed(Duration(seconds: 1)).then((result) async {
       var androidPlatformChannelSpecifics =
@@ -67,17 +69,17 @@ class GeofenceManager {
 }
 
  Future<void> requestLocationPermissions() async {
-  print("requestLocationPermissions");
+   logger.d("requestLocationPermissions");
   final serviceEnabled = await Geolocator.isLocationServiceEnabled();
   if (!serviceEnabled) {
-    print("Location services are disabled.");
+    logger.d("Location services are disabled.");
     return;
   }
   var permission = await Geolocator.checkPermission();
   if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
     permission = await Geolocator.requestPermission();
     if (permission == LocationPermission.denied) {
-      print("Location permissions are denied.");
+      logger.d("Location permissions are denied.");
       return;
     }
   }

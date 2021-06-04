@@ -8,6 +8,8 @@ import 'package:photo_map_poc/store/image_metadata/image_metadata_actions.dart';
 import 'package:photo_map_poc/store/photos/photos_actions.dart';
 import 'package:redux_saga/redux_saga.dart';
 
+import '../../main.dart';
+
 metadataSaga() sync* {
   yield TakeEvery(_extractMetadata, pattern: ExtractMetadataRequestedAction);
 }
@@ -15,12 +17,12 @@ metadataSaga() sync* {
 _extractMetadata({required ExtractMetadataRequestedAction action}) sync* {
   yield Try(() sync* {
     final path = action.path;
-    print("Try extract meta from $path");
+    logger.d("Try extract meta from $path");
     final exifResult = Result<Map<String?, IfdTag>?>();
     yield Call(readExifFromFile, args: [File(path)], result: exifResult);
     final data = exifResult.value;
     if (data == null || data.isEmpty) {
-      print("No EXIF information found");
+      logger.d("No EXIF information found");
       return;
     }
 
@@ -51,6 +53,6 @@ _extractMetadata({required ExtractMetadataRequestedAction action}) sync* {
     );
     yield Put(SavePhotoAction(photoData));
   }, Catch: (e, s) {
-    print("Exception caught: $e, $s");
+    logger.e("Exception caught:", e, s);
   });
 }

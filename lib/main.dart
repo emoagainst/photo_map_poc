@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:in_app_purchase_android/in_app_purchase_android.dart';
+import 'package:logger/logger.dart';
 import 'package:photo_map_poc/application.dart';
 import 'package:photo_map_poc/database/database.dart';
 import 'package:photo_map_poc/database/photo_dao.dart';
@@ -19,6 +20,7 @@ import 'package:redux/redux.dart';
 import 'package:redux_saga/redux_saga.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+final logger = Logger();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

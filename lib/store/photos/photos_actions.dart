@@ -40,3 +40,9 @@ class SavePhotoFailedAction {
 
   SavePhotoFailedAction(this.e);
 }
+
+class DeletePhotoDetailsRequestedAction {
+  final int id;
+
+  DeletePhotoDetailsRequestedAction(this.id);
+}

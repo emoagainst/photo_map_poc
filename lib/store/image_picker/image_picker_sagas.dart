@@ -24,7 +24,7 @@ _openCamera(ImagePicker picker, {required OpenCameraRequestedAction action}) syn
     }
     yield Put(ExtractMetadataRequestedAction(photoUri));
   }, Catch: (e, s) {
-    print("Exception caught $e, $s");
+    logger.e("Exception caught:", e, s);
   });
 }
 
@@ -39,6 +39,6 @@ _openGallery(ImagePicker picker, {required OpenGalleryRequestedAction action}) s
     }
     yield Put(ExtractMetadataRequestedAction(photoUri));
   }, Catch: (e, s) {
-    print("Exception caught $e, $s");
+    logger.e("Exception caught:", e, s);
   });
 }

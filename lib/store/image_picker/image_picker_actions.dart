@@ -1,0 +1,2 @@
+class OpenCameraRequestedAction{}
+class OpenGalleryRequestedAction{}

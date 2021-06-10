@@ -11,7 +11,6 @@ geofenceSaga(GeofenceManager geofenceManager) sync* {
 _saveGeofence(GeofenceManager geofenceManager, {required SaveGeofenceAction action}) sync* {
   yield Try(() sync* {
     yield Call(geofenceManager.addGeolocationForPhoto, args: [action.photo]);
-    yield Call(geofenceManager.listenToGeofences);
   }, Catch: (e, s) {
     logger.e("Exception caught:", e, s);
   });

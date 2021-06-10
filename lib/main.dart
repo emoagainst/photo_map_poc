@@ -43,7 +43,7 @@ void main() async {
 
   final imagePicker = ImagePicker();
   final geofenceManager = GeofenceManager();
-  geofenceManager.init();
+  await geofenceManager.init();
   final purchaseValidator = PurchaseValidator(purchaseDao);
   final paymentProvider = PaymentProvider();
   paymentProvider.init();

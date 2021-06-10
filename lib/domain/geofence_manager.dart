@@ -1,53 +1,61 @@
+import 'dart:isolate';
 import 'dart:math';
+import 'dart:ui';
 
-import 'package:flutter_geofence/geofence.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:photo_map_poc/domain/models/photo_data.dart';
 
 import '../main.dart';
+import 'package:geofencing/geofencing.dart';
 
 class GeofenceManager {
   final _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   final _initializationSettingsAndroid = new AndroidInitializationSettings('ic_launcher');
   final _initializationSettingsIOS = IOSInitializationSettings(onDidReceiveLocalNotification: null);
 
-  void init() {
+  final port = ReceivePort();
+
+  final triggers = <GeofenceEvent>[GeofenceEvent.enter, GeofenceEvent.exit, GeofenceEvent.dwell];
+
+  final androidSettings = AndroidGeofencingSettings(
+    initialTrigger: <GeofenceEvent>[GeofenceEvent.enter, GeofenceEvent.exit, GeofenceEvent.dwell],
+    loiteringDelay: 1000 * 60,
+  );
+
+  static void callback(List<String> ids, Location l, GeofenceEvent e) async {
+    print('Fences: $ids Location $l Event: $e');
+    final SendPort? send = IsolateNameServer.lookupPortByName('geofencing_send_port');
+    send?.send(e.toString());
+  }
+
+  Future<void> init() async {
     logger.d("GeofenceManager init");
     final initializationSettings = InitializationSettings(android: _initializationSettingsAndroid, iOS: _initializationSettingsIOS);
     _flutterLocalNotificationsPlugin.initialize(initializationSettings, onSelectNotification: null);
 
-    Geofence.initialize();
-    Geofence.requestPermissions();
-    listenToGeofences();
-    listenToLocationUpdates();
-  }
+    IsolateNameServer.registerPortWithName(port.sendPort, 'geofencing_send_port');
+    port.listen((data) {
+      logger.d('Event $data');
+    });
 
-  void listenToGeofences() {
-    Geofence.startListening(GeolocationEvent.entry, (entry) {
-      logger.d("Entry of a georegion. Welcome to: ${entry.id}");
-      _scheduleNotification("Entry of a georegion", "Welcome to: ${entry.id}");
-    });
-    Geofence.startListening(GeolocationEvent.exit, (entry) {
-      logger.d("Exit of a georegion. Welcome to: ${entry.id}");
-      _scheduleNotification("Exit of a georegion", "Byebye to: ${entry.id}");
-    });
+    logger.d('Initializing geofence manager...');
+    await GeofencingManager.initialize();
+    logger.d('Initialization done');
   }
-
-  void listenToLocationUpdates() {
-    Geofence.startListeningForLocationChanges();
-    Geofence.backgroundLocationUpdated.stream.listen((coordinate) {
-      logger.d("Location changed to ${coordinate.latitude}: ${coordinate.longitude}");
-      // _scheduleNotification("Location changed", "Location changed to ${coordinate.latitude}: ${coordinate.longitude}");
-    });
-}
 
   _scheduleNotification(String title, String subtitle) {
     logger.d("scheduling one with $title and $subtitle");
     var rng = new Random();
     Future.delayed(Duration(seconds: 1)).then((result) async {
-      var androidPlatformChannelSpecifics =
-          AndroidNotificationDetails('your channel id', 'your channel name', 'your channel description', importance: Importance.high, priority: Priority.high, ticker: 'ticker');
+      var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+        'your channel id',
+        'your channel name',
+        'your channel description',
+        importance: Importance.high,
+        priority: Priority.high,
+        ticker: 'ticker',
+      );
       var iOSPlatformChannelSpecifics = IOSNotificationDetails();
       var platformChannelSpecifics = NotificationDetails(android: androidPlatformChannelSpecifics, iOS: iOSPlatformChannelSpecifics);
       await _flutterLocalNotificationsPlugin.show(rng.nextInt(100000), title, subtitle, platformChannelSpecifics, payload: 'item x');
@@ -55,21 +63,23 @@ class GeofenceManager {
   }
 
   addGeolocationForPhoto(PhotoData photo) async {
-
-      await Geofence.addGeolocation(
-          Geolocation(
-            latitude: photo.latitude,
-            longitude: photo.longitude,
-            radius: 200,
-            id: "Photo ${photo.id}",
-          ),
-          GeolocationEvent.entry);
-      _scheduleNotification("Georegion added", "Your geofence has been added!");
+    GeofencingManager.registerGeofence(
+      GeofenceRegion(
+        id: "Photo ${photo.id}",
+        latitude: photo.latitude,
+        longitude: photo.longitude,
+        radius: 200,
+        triggers: triggers,
+        androidSettings: androidSettings,
+      ),
+      callback,
+    );
+    _scheduleNotification("Georegion added", "Your geofence has been added!");
   }
 }
 
- Future<void> requestLocationPermissions() async {
-   logger.d("requestLocationPermissions");
+Future<void> requestLocationPermissions() async {
+  logger.d("requestLocationPermissions");
   final serviceEnabled = await Geolocator.isLocationServiceEnabled();
   if (!serviceEnabled) {
     logger.d("Location services are disabled.");

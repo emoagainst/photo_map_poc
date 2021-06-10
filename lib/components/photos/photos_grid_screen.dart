@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:photo_map_poc/common/widget_keys.dart';
 import 'package:photo_map_poc/components/photo_source_picker/photo_source_picker_container.dart';
+import 'package:photo_map_poc/components/photos/dialog_delete_photo_container.dart';
 import 'package:photo_map_poc/domain/models/photo_data.dart';
 import 'package:photo_map_poc/widgets/loading_indicator.dart';
 
@@ -63,8 +64,11 @@ class _PhotosGridScreenState extends State<PhotosGridScreen> {
               return SizedBox.expand(
                 key: Key("__photoItem_${photo.id}__"),
                 child: InkWell(
-                  onLongPress: () => widget.onDeletePhotoDetailsRequestedAction(photo.id!),
                   onTap: () => widget.onOpenPhotoDetailsRequestedAction(photo.id!),
+                  onLongPress: () => showDialog(
+                    context: context,
+                    builder: (context) => DeletePhotoDialog(photoId: photo.id!),
+                  ),
                   child: Image.file(
                     File(photo.path),
                     fit: BoxFit.cover,
